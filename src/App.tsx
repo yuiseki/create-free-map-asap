@@ -2,28 +2,25 @@ import { Layer, Map, MapRef, Source, useMap } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import osmtogeojson from "osmtogeojson";
 import useSWR from "swr";
-import { useEffect, useState } from "react";
-import { FeatureCollection } from "geojson";
+import { useEffect } from "react";
 import { Marker, PaddingOptions } from "react-map-gl";
 import * as turf from "@turf/turf";
 
+// osmtogeojsonを使っているよ！！
+// osmtogeojsonを使っているよ！！
+// osmtogeojsonを使っているよ！！
 // useSWRを使うために必要な関数
-const jsonFetcher = async (url: string) => {
+const osmtogeojsonFetcher = async (url: string) => {
   const res = await fetch(url);
 
   if (!res.ok) {
     console.error(res);
-    const error = new Error("An error occurred while fetching the data.");
-    throw error;
+    throw new Error("An error occurred while fetching the data.");
   }
 
-  return res.headers.get("content-type")?.includes("json")
-    ? res.json()
-    : async () => {
-        const text = await res.text();
-        return JSON.parse(text);
-      };
-};
+  const json = await res.json();
+  return osmtogeojson(json);
+}
 
 // Turf.jsを使っているよ！！
 // Turf.jsを使っているよ！！
@@ -66,24 +63,20 @@ const ChuoWardLayer = () => {
   const overpassRequestUrl = `${overpassApiEndpoint}?data=${encodeURIComponent(
     queryChuo
   )}`;
-  const { data } = useSWR(overpassRequestUrl, jsonFetcher);
-  const [geoJson, setGeoJson] = useState<FeatureCollection | null>(null);
+  const { data: geoJson } = useSWR(overpassRequestUrl, osmtogeojsonFetcher);
+
   const { current: map } = useMap();
 
   useEffect(() => {
-    if (data) {
-      const newGeoJson = osmtogeojson(data);
-      setGeoJson(newGeoJson);
-      if (map && newGeoJson) {
-        fitBoundsToGeoJson(map, newGeoJson, {
+      if (map && geoJson) {
+        fitBoundsToGeoJson(map, geoJson, {
               top: 40,
               left: 40,
               right: 40,
               bottom: 40,
             });
       }
-    }
-  }, [data, map]);
+  }, [geoJson, map]);
 
   if (!geoJson) {
     return null;
@@ -114,19 +107,10 @@ const ChuoWardRamenLayer = () => {
     );
     out geom;
     `;
-
   const overpassRequestUrl = `${overpassApiEndpoint}?data=${encodeURIComponent(
     queryRamen
   )}`;
-  const { data } = useSWR(overpassRequestUrl, jsonFetcher);
-  const [geoJson, setGeoJson] = useState<FeatureCollection | null>(null);
-
-  useEffect(() => {
-    if (data) {
-      const newGeoJson = osmtogeojson(data);
-      setGeoJson(newGeoJson);
-    }
-  }, [data]);
+  const { data: geoJson } = useSWR(overpassRequestUrl, osmtogeojsonFetcher);
 
   if (!geoJson) {
     return null;
@@ -135,6 +119,7 @@ const ChuoWardRamenLayer = () => {
   return (
     <>
       {geoJson.features.map((feature) => {
+        // マーカーとして描画する
         // ここで型チェックをする
         if (
           feature.geometry.type !== "Point" ||
