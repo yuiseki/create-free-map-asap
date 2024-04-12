@@ -97,9 +97,10 @@ const ChuoWardLayer = () => {
   );
 };
 
-const ChuoWardRamenLayer = () => {
-  const icon = "🍜";
-  const cuisine = "ramen";
+const ChuoWardRestaurantLayer = ({icon, cuisine}:{
+  icon: string;
+  cuisine: string;
+}) => {
   const queryRamen = `
     [out:json][timeout:30000];
     area["name:en"="Tokyo"]->.outer;
@@ -182,7 +183,7 @@ function App() {
         style={{ width: "100%", height: "100%" }}
         mapStyle="https://tile.openstreetmap.jp/styles/osm-bright-ja/style.json"
       >
-        <ChuoWardRamenLayer />
+        <ChuoWardRestaurantLayer icon="🍜" cuisine="ramen" />
         <ChuoWardLayer />
       </Map>
     </div>
