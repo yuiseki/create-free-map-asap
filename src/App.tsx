@@ -20,7 +20,7 @@ const osmtogeojsonFetcher = async (url: string) => {
 
   const json = await res.json();
   return osmtogeojson(json);
-}
+};
 
 // Turf.jsを使っているよ！！
 // Turf.jsを使っているよ！！
@@ -41,7 +41,7 @@ const fitBoundsToGeoJson = (
     ],
     {
       padding: padding,
-      duration: 10000,
+      duration: 1000,
     }
   );
 };
@@ -51,12 +51,12 @@ const fitBoundsToGeoJson = (
 // OverpassAPIを使っているよ！！
 const overpassApiEndpoint = "https://z.overpass-api.de/api/interpreter";
 
-const ChuoWardLayer = () => {
+const TokyoAreaLayer = ({ areaName }: { areaName: string }) => {
   const queryChuo = `
     [out:json][timeout:30000];
     area["name:en"="Tokyo"]->.outer;
     (
-      relation["name:en"="Chuo"](area.outer);
+      relation["name:en"="${areaName}"](area.outer);
     );
     out geom;
     `;
@@ -68,14 +68,14 @@ const ChuoWardLayer = () => {
   const { current: map } = useMap();
 
   useEffect(() => {
-      if (map && geoJson) {
-        fitBoundsToGeoJson(map, geoJson, {
-              top: 40,
-              left: 40,
-              right: 40,
-              bottom: 40,
-            });
-      }
+    if (map && geoJson) {
+      fitBoundsToGeoJson(map, geoJson, {
+        top: 40,
+        left: 40,
+        right: 40,
+        bottom: 40,
+      });
+    }
   }, [geoJson, map]);
 
   if (!geoJson) {
@@ -97,14 +97,19 @@ const ChuoWardLayer = () => {
   );
 };
 
-const ChuoWardRestaurantLayer = ({icon, cuisine}:{
+const TokyoRestaurantLayer = ({
+  icon,
+  cuisine,
+  areaName,
+}: {
   icon: string;
   cuisine: string;
+  areaName: string;
 }) => {
   const queryRamen = `
     [out:json][timeout:30000];
     area["name:en"="Tokyo"]->.outer;
-    area["name:en"="Chuo"]->.inner;
+    area["name:en"="${areaName}"]->.inner;
     (
       nwr["amenity"="restaurant"]["cuisine"="${cuisine}"](area.inner)(area.outer);
     );
@@ -138,7 +143,9 @@ const ChuoWardRestaurantLayer = ({icon, cuisine}:{
             latitude={feature.geometry.coordinates[1]}
           >
             <div
-              title={feature.properties?.name ? feature.properties.name : "no name"}
+              title={
+                feature.properties?.name ? feature.properties.name : "no name"
+              }
               style={{
                 display: "flex",
                 flexDirection: "column",
@@ -171,6 +178,7 @@ const ChuoWardRestaurantLayer = ({icon, cuisine}:{
 };
 
 function App() {
+  const areaName = "Taito";
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
       <Map
@@ -183,8 +191,8 @@ function App() {
         style={{ width: "100%", height: "100%" }}
         mapStyle="https://tile.openstreetmap.jp/styles/osm-bright-ja/style.json"
       >
-        <ChuoWardRestaurantLayer icon="🍜" cuisine="ramen" />
-        <ChuoWardLayer />
+        <TokyoRestaurantLayer areaName={areaName} icon="🍜" cuisine="ramen" />
+        <TokyoAreaLayer areaName={areaName} />
       </Map>
     </div>
   );
