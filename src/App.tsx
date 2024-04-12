@@ -178,7 +178,7 @@ const TokyoRestaurantLayer = ({
 };
 
 function App() {
-  const areaName = "Taito";
+  const areaName = "Chuo";
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
       <Map
