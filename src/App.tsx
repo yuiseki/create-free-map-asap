@@ -98,12 +98,14 @@ const ChuoWardLayer = () => {
 };
 
 const ChuoWardRamenLayer = () => {
+  const icon = "🍜";
+  const cuisine = "ramen";
   const queryRamen = `
     [out:json][timeout:30000];
     area["name:en"="Tokyo"]->.outer;
     area["name:en"="Chuo"]->.inner;
     (
-      nwr["amenity"="restaurant"]["cuisine"="ramen"](area.inner)(area.outer);
+      nwr["amenity"="restaurant"]["cuisine"="${cuisine}"](area.inner)(area.outer);
     );
     out geom;
     `;
@@ -157,7 +159,7 @@ const ChuoWardRamenLayer = () => {
                   lineHeight: "1.1",
                 }}
               >
-                🍜
+                {icon}
               </div>
             </div>
           </Marker>
